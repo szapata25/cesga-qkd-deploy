@@ -1,0 +1,14 @@
+### For reference, see `/opt/open5gs/etc/orig/open5gs/`
+ausf:
+  sbi:
+    - dev: eth0
+      port: 7777
+nrf:
+  sbi:
+    - addr: 172.22.0.5
+      port: 7777
+
+parameter:
+max:
+pool:
+time:

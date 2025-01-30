@@ -1,0 +1,147 @@
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+services: 
+  mongo:
+    image: mongo:4.4.13
+    environment:
+      MONGO_INITDB_DATABASE: open5gs
+    networks:
+      default:
+        ipv4_address: 172.22.0.2
+        
+  amf:
+    image: openverso/open5gs:2.5.6
+    volumes:
+      - ./config/amf.yaml:/opt/open5gs/etc/open5gs/amf.yaml
+    command: 
+      - open5gs-amfd 
+    restart : on-failure
+    privileged: true
+    # ports:
+    #   - 38412:38412
+    #   - 7777:7777
+    network_mode: host
+    
+  ausf:
+    image: openverso/open5gs:2.5.6
+    volumes:
+      - ./config/ausf.yaml:/opt/open5gs/etc/open5gs/ausf.yaml
+    command: 
+      - open5gs-ausfd
+    restart : on-failure
+    networks:
+      default:
+        ipv4_address: 172.22.0.3
+    
+  bsf:
+    image: openverso/open5gs:2.5.6
+    volumes:
+      - ./config/bsf.yaml:/opt/open5gs/etc/open5gs/bsf.yaml
+    command: 
+      - open5gs-bsfd
+    restart : on-failure
+    networks:
+      default:
+        ipv4_address: 172.22.0.4
+
+  nrf:
+    image: openverso/open5gs:2.5.6
+    volumes:
+      - ./config/nrf.yaml:/opt/open5gs/etc/open5gs/nrf.yaml
+    command: open5gs-nrfd
+    restart : on-failure
+    networks:
+      default:
+        ipv4_address: 172.22.0.5
+    
+  nssf:
+    image: openverso/open5gs:2.5.6
+    command: open5gs-nssfd   
+    restart : on-failure 
+    volumes:
+      - ./config/nssf.yaml:/opt/open5gs/etc/open5gs/nssf.yaml   
+    networks:
+      default:
+        ipv4_address: 172.22.0.6 
+
+  pcf:
+    image: openverso/open5gs:2.5.6
+    volumes:
+      - ./config/pcf.yaml:/opt/open5gs/etc/open5gs/pcf.yaml
+    command: 
+      - open5gs-pcfd
+    environment:
+      DB_URI: mongodb://mongo/open5gs
+    restart : on-failure
+    networks:
+      default:
+        ipv4_address: 172.22.0.7
+    
+  smf:
+    image: openverso/open5gs:2.5.6
+    volumes:
+      - ./config/smf.yaml:/opt/open5gs/etc/open5gs/smf.yaml
+    command: open5gs-smfd
+    restart : on-failure 
+    networks:
+      default:
+        ipv4_address: 172.22.0.8
+    
+  udm:
+    image: openverso/open5gs:2.5.6
+    volumes:
+      - ./config/udm.yaml:/opt/open5gs/etc/open5gs/udm.yaml
+    restart: on-failure
+    command: 
+      - open5gs-udmd
+    networks:
+      default:
+        ipv4_address: 172.22.0.9
+    
+  udr:
+    image: openverso/open5gs:2.5.6
+    volumes:
+      - ./config/udr.yaml:/opt/open5gs/etc/open5gs/udr.yaml
+    restart: on-failure
+    environment:
+      DB_URI: mongodb://mongo/open5gs
+    command: 
+      - open5gs-udrd
+    networks:
+      default:
+        ipv4_address: 172.22.0.10
+    
+  upf:
+    image: openverso/open5gs:2.5.6
+    environment:
+      - IPV4_TUN_SUBNET=10.45.0.0/16
+      - IPV4_TUN_ADDR=10.45.0.1/16
+    volumes:
+      - ./config/upf.yaml:/opt/open5gs/etc/open5gs/upf.yaml
+      - ./config/entrypoint.sh:/entrypoint.sh
+    command:
+      - open5gs-upfd
+    cap_add:
+      - all
+    privileged: true
+    restart: on-failure
+    # environment:
+    # ENABLE_NAT: "false"
+    # ports:
+    #   - 2152:2152
+    network_mode: host
+    
+  # webui:
+  #   image: openverso/open5gs-webui:2.4.9
+  #   restart: on-failure
+  #   environment:
+  #     DB_URI: mongodb://mongo/open5gs
+  #     NODE_ENV: dev
+  #   ports:
+  #     - 3000:3000
+  #   networks:
+  #     default:
+  #       ipv4_address: 172.22.0.11
